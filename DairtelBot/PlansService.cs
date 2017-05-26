@@ -44,7 +44,9 @@ namespace DairtelBot
                 {
                     toReturn = toReturn + x + "\n\n";
                 }
-            
+
+                toReturn += "Type 'return' to back one level. Type 'home' to start again.";
+                
 
                             
                     

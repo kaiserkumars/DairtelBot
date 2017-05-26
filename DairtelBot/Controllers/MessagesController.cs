@@ -14,6 +14,8 @@ using System.Collections.Generic;
 
 namespace DairtelBot
 {
+   
+    
     [BotAuthentication]
     public class MessagesController : ApiController
     {
@@ -21,6 +23,7 @@ namespace DairtelBot
         /// POST: api/Messages
         /// Receive a message from a user and reply to it
         /// </summary>
+       
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
             string replyMessage=string.Empty;
@@ -30,10 +33,12 @@ namespace DairtelBot
                 var phrase = activity.Text;
                 var myEntity= string.Empty;
                 var luisResponse = await LuisService.PareUserInput(phrase);
+                var choice = luisResponse.intents[0].intent;
+               // choicesStack.Push(choice);
                 //var copyLuisResponseEntity = string.Empty;
                 if (luisResponse.intents.Count() > 0)
                 {
-                    switch (luisResponse.intents[0].intent)
+                    switch (choice)
                     {
                         case "BuySim":
                             myEntity = luisResponse.entities[0].entity;
@@ -46,10 +51,17 @@ namespace DairtelBot
                         case "Number":
                             myEntity = luisResponse.entities[0].entity;
                             replyMessage = await GetPlans(myEntity);
+                           // replyMessage = checkReply(replyMessage);
                             break;
                         case "DTHPlans":
                             replyMessage = GetDTHType();
                             break;
+                      //  case "return":
+                        //   theReturnCase();
+                          //  break;
+                        //case "home":
+                          // replyMessage=theHomeCase();
+                            //break;
                         default:
                             replyMessage = "Sorry! I don't understand it.";
                             break;
@@ -64,6 +76,7 @@ namespace DairtelBot
 
                 Activity reply = activity.CreateReply(replyMessage);
                 await connector.Conversations.ReplyToActivityAsync(reply);
+
                 //await Conversation.SendAsync(activity, () => new Dialogs.RootDialog());
             }
             else
@@ -94,6 +107,11 @@ namespace DairtelBot
             return rvalue;
         }
 
+
+        private void callPropt()
+        {
+           
+        }
         private string BuySim()
         {
             string data = "Here is the list of documents required to buy a new airtel sim:" +
@@ -101,6 +119,14 @@ namespace DairtelBot
             return data;
         }
 
+        /*
+        private string theHomeCase()
+        {
+            choicesStack.Clear();
+           string replyMessage = "Welcome User!\n\nAsk me for mobile recharge plans, dth recharge plans and other FAQs";
+            return replyMessage;
+        }
+        */
         IDictionary<string, string> recType = new Dictionary<string, string>();
         private string SelectPlan()
         {
@@ -117,6 +143,16 @@ namespace DairtelBot
             return planData;
         }
 
+        /*
+        private string checkReply(string replyM)
+        {
+            if (choicesStack.Peek().ToString() == "ShowPlans")
+                return replyM;
+            else if (choicesStack.Peek().ToString() == "DTHPlans")
+                return replyM;
+            else
+                return null;
+        }*/
         
         private void DownloadData()
         {
@@ -128,9 +164,21 @@ namespace DairtelBot
             if (recType.ContainsKey(data))
                 return recType[data];
             else
-                return "null";
+                return null;
         }
 
+        /*
+        private void theReturnCase()
+        {
+            choicesStack.Pop();
+            string popped = choicesStack.Pop().ToString();
+            if (string.Equals(popped, "ShowPlans"))
+                SelectPlan();
+            else if (string.Equals(popped, "DTHPlans"))
+                ;
+        }*/
+
+        
         private Activity HandleSystemMessage(Activity message)
         {
             if (message.Type == ActivityTypes.DeleteUserData)
